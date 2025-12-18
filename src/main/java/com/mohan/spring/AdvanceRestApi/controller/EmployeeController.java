@@ -86,7 +86,7 @@ public class EmployeeController {
     @GetMapping("/getall")
     public ResponseEntity<List<Employee>> getEmployees() {
         logger.info("Request to fetch all employees");
-        logger.info("Test commit for Jenkins automation!");
+        logger.info("It is Test commit for Jenkins automation!");
         List<Employee> employees = employeeService.getAllEmployees();
         return ResponseEntity.ok(employees);
     }
