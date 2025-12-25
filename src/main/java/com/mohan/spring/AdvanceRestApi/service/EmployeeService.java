@@ -37,19 +37,38 @@ public class EmployeeService {
         name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
         employee.setName(name);
 
-        // Department normalization
-        String dept = employee.getDept().trim();
-        if (dept.equalsIgnoreCase("HR")) {
-            dept = "HR";
-        } else if (dept.equalsIgnoreCase("Developer") || dept.equalsIgnoreCase("Dev")) {
-            dept = "Developer";
-        } else if (dept.equalsIgnoreCase("Tester") || dept.equalsIgnoreCase("Test")) {
-            dept = "Tester";
-        } else {
-            logger.error("Invalid department: {}", dept);
-            throw new IllegalDeptException("Department is not valid. Allowed: HR, Developer, Tester");
+     // Department normalization (NULL SAFE)
+        String dept = employee.getDept();
+
+        if (dept == null) {
+            throw new IllegalDeptException("Department is required");
         }
-        employee.setDept(dept);
+
+        // Remove ALL whitespace (including unicode)
+        dept = dept.replaceAll("\\s+", "").toUpperCase();
+
+        switch (dept) {
+            case "HR":
+                employee.setDept("HR");
+                break;
+
+            case "DEVELOPER":
+            case "DEV":
+                employee.setDept("Developer");
+                break;
+
+            case "TESTER":
+            case "TEST":
+                employee.setDept("Tester");
+                break;
+
+            default:
+                logger.error("Invalid department after normalization: {}", dept);
+                throw new IllegalDeptException(
+                    "Department is not valid. Allowed: HR, Developer, Tester"
+                );
+        }
+
 
         // Salary rules
         Double salary = employee.getSalary();
@@ -149,9 +168,17 @@ public class EmployeeService {
 
     // Put method (update)
     public Employee updateEmployeeById(String id, Employee updateEmployeeDetails) {
-        logger.info("Updating employee with id {}", id);
-        Employee existEmp = employeeRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id " + id));
+
+        String trimmedId = id.trim(); // ✅ new variable
+
+        logger.info("Updating employee with id [{}]", trimmedId);
+
+        Employee existEmp = employeeRepository.findById(trimmedId)
+                .orElseThrow(() ->
+                    new EmployeeNotFoundException(
+                        "Employee not found with id " + trimmedId
+                    )
+                );
 
         existEmp.setName(updateEmployeeDetails.getName());
         existEmp.setSalary(updateEmployeeDetails.getSalary());
@@ -161,6 +188,7 @@ public class EmployeeService {
         validateAndNormalize(existEmp);
         return employeeRepository.save(existEmp);
     }
+
 
     // Patch method
     public Employee partiallyUpdateEmployeeById(String id, Map<String, Object> updateEmployeeDetails) {
@@ -255,9 +283,25 @@ public class EmployeeService {
         return employeeRepository.findNameAndSalaryByDept(dept);
     }
 
-    public int updateWithNewName(String id, String oldName, String newName) {
-        return employeeRepository.updateEmployeeNameByIdAndOldName(id, oldName, newName);
+    public void updateWithNewName(String id, String oldName, String newName) {
+
+        String trimmedId = id.trim();
+        String oldNameTrimmed = oldName.trim();
+        String newNameTrimmed = newName.trim();
+
+        Employee emp = employeeRepository.findById(trimmedId)
+                .orElseThrow(() ->
+                    new EmployeeNotFoundException("Employee not found with id " + trimmedId)
+                );
+
+        if (!emp.getName().equalsIgnoreCase(oldNameTrimmed)) {
+            throw new IllegalArgumentException("Old name does not match");
+        }
+
+        emp.setName(newNameTrimmed);
+        employeeRepository.save(emp);
     }
+
 
     public void deleteByDeptAndGender(String dept, String gender) {
         employeeRepository.deleteByDeptAndGender(dept, gender);

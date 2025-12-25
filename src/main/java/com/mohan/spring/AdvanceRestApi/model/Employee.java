@@ -2,6 +2,8 @@ package com.mohan.spring.AdvanceRestApi.model;
 
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.Id;

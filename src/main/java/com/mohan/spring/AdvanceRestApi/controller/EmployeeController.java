@@ -144,7 +144,7 @@ public class EmployeeController {
     }
     
     // Delete all employees
-    @DeleteMapping("/deleteALl")
+    @DeleteMapping("/deleteAll")
     public ResponseEntity<Void> deleteAll() {
         logger.info("Request to delete all employees");
         employeeService.deleteAllEmps();
@@ -219,12 +219,15 @@ public class EmployeeController {
 
     // Update name operation
     @PatchMapping("/{id}/update-name")
-    public ResponseEntity<String> updateWithNewName(@PathVariable("id") String id,
-                                                    @RequestParam("oldName") String oldName,
-                                                    @RequestParam("newName") String newName) {
-        int res = employeeService.updateWithNewName(id, oldName, newName);
-        return ResponseEntity.ok(res == 1 ? "Data updated successfully" : "Not updated");
+    public ResponseEntity<String> updateWithNewName(
+            @PathVariable String id,
+            @RequestParam String oldName,
+            @RequestParam String newName) {
+
+        employeeService.updateWithNewName(id, oldName, newName);
+        return ResponseEntity.ok("Employee name updated successfully");
     }
+
 
     @DeleteMapping("delbydeptgender")
     public ResponseEntity<String> deleteByDeptAndGender(
