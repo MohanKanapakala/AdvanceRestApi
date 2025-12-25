@@ -2,7 +2,7 @@
 FROM eclipse-temurin:21-jdk
 
 # Copy your Spring Boot JAR into the container
-COPY target/your-app.jar /usr/app/your-app.jar
+COPY target/your-app.jar /usr/app/AdvanceRestApi-0.0.1-SNAPSHOT.jar
 
 # Set working directory
 WORKDIR /usr/app
